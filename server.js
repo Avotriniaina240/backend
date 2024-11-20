@@ -1,22 +1,42 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken'); 
 const app = express();
 
-// Configuration CORS
 app.use(cors());
-
-// Middleware pour parser les JSON
 app.use(express.json());
 
-// Route de base pour tester le backend
+const users = [
+  {
+    email: 'admin@gmail.com',
+    password: 'admin' 
+  }
+];
+
 app.get('/', (req, res) => {
   res.send('Backend opérationnel !');
 });
 
-// Définir un port fixe
-const PORT = 3000;
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
 
-// Lancement du serveur
+  const user = users.find(u => u.email === email);
+
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect.' });
+  }
+
+  if (user.password !== password) {
+    return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect.' });
+  }
+
+  const token = jwt.sign({ email: user.email }, 'votre_clé_secrète', { expiresIn: '1h' });
+
+  res.json({ success: true, token });
+});
+
+const PORT = 5000;
+
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
 });
